@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   const pillars = [
     {
@@ -33,6 +35,14 @@ export default function Home() {
             gêne au quotidien : une interface trop chargée et des
             ralentissements dès que le contenu grossit.
           </p>
+          <div>
+            <Link
+              href="/workspace"
+              className="inline-flex items-center rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+            >
+              Ouvrir l&apos;espace de travail
+            </Link>
+          </div>
         </header>
 
         <section className="grid grid-cols-1 gap-6 sm:grid-cols-2">
