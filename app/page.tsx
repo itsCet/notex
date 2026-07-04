@@ -1,20 +1,20 @@
 export default function Home() {
   const pillars = [
     {
-      title: "IA native",
-      desc: "Des blocs générés, résumés et complétés par IA directement dans l'éditeur — pas un plugin greffé après coup.",
+      title: "Une interface épurée",
+      desc: "Une seule chose à l'écran à la fois : le contenu. Pas de barres latérales encombrées, pas d'options superflues qui distraient de l'écriture.",
     },
     {
-      title: "Rapide comme un éditeur local",
-      desc: "Frappe instantanée, offline-first, synchronisation en arrière-plan. Zéro lag, même avec des milliers de pages.",
+      title: "Instantané, sans exception",
+      desc: "Chaque frappe, chaque ouverture de page, chaque recherche répond immédiatement — même avec des milliers de pages et de grosses bases de données.",
     },
     {
-      title: "Collaboration temps réel",
-      desc: "Curseurs live, commentaires, permissions fines — la fluidité d'un éditeur collaboratif moderne.",
+      title: "Collaboration fluide",
+      desc: "Édition à plusieurs sans latence ni conflit, avec des permissions claires et faciles à gérer.",
     },
     {
-      title: "Bases de données avancées",
-      desc: "Relations, formules, automatisations et vues personnalisées qui vont plus loin que les databases classiques.",
+      title: "Bases de données robustes",
+      desc: "Relations, formules et vues qui restent rapides et lisibles même à grande échelle, sans configuration alambiquée.",
     },
   ];
 
@@ -26,12 +26,12 @@ export default function Home() {
             Notex
           </span>
           <h1 className="text-4xl font-semibold tracking-tight text-black dark:text-zinc-50 sm:text-5xl">
-            Un espace de travail qui pense avec toi.
+            Toute la puissance de Notion, sans son poids.
           </h1>
           <p className="max-w-xl text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Notex reprend l&apos;idée des blocs et des pages de Notion, et la
-            pousse plus loin : IA native, vitesse d&apos;un éditeur local,
-            collaboration en temps réel et bases de données puissantes.
+            Notex reprend les pages et les blocs de Notion et corrige ce qui
+            gêne au quotidien : une interface trop chargée et des
+            ralentissements dès que le contenu grossit.
           </p>
         </header>
 
@@ -50,10 +50,6 @@ export default function Home() {
             </div>
           ))}
         </section>
-
-        <footer className="text-sm text-zinc-500">
-          En construction — v0.1.
-        </footer>
       </main>
     </div>
   );

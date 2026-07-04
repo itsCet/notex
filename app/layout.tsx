@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Notex",
-  description: "Un espace de travail qui pense avec toi.",
+  description: "Toute la puissance de Notion, sans son poids.",
 };
 
 export default function RootLayout({
