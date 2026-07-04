@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { formatJournalTitle } from "./date";
 import type { Block, BlockType, Page } from "./types";
 
 function newId(): string {
@@ -21,10 +22,12 @@ interface WorkspaceState {
   renamePage: (pageId: string, title: string) => void;
   deletePage: (pageId: string) => void;
   ensureSeeded: () => string | null;
+  getOrCreateJournalPage: (isoDate: string) => string;
 
   insertBlockAfter: (pageId: string, afterBlockId: string | null, type?: BlockType) => string;
   updateBlockContent: (blockId: string, content: string) => void;
   setBlockType: (blockId: string, type: BlockType) => void;
+  setBlockDueDate: (blockId: string, dueDate: string | null) => void;
   toggleTodo: (blockId: string) => void;
   deleteBlock: (pageId: string, blockId: string) => void;
 }
@@ -33,6 +36,29 @@ export function getChildPages(pages: Record<string, Page>, parentId: string | nu
   return Object.values(pages)
     .filter((p) => p.parentId === parentId)
     .sort((a, b) => a.createdAt - b.createdAt);
+}
+
+export function getJournalPage(pages: Record<string, Page>, isoDate: string): Page | undefined {
+  return Object.values(pages).find((p) => p.journalDate === isoDate);
+}
+
+export interface TodoEntry {
+  block: Block;
+  pageId: string;
+  pageTitle: string;
+}
+
+export function getAllTodos(pages: Record<string, Page>, blocks: Record<string, Block>): TodoEntry[] {
+  const entries: TodoEntry[] = [];
+  for (const page of Object.values(pages)) {
+    for (const blockId of page.blockIds) {
+      const block = blocks[blockId];
+      if (block && block.type === "todo") {
+        entries.push({ block, pageId: page.id, pageTitle: page.title || "Sans titre" });
+      }
+    }
+  }
+  return entries;
 }
 
 function collectDescendantPageIds(state: WorkspaceState, pageId: string): string[] {
@@ -134,6 +160,28 @@ export const useWorkspace = create<WorkspaceState>()(
         });
       },
 
+      getOrCreateJournalPage: (isoDate) => {
+        const existing = getJournalPage(get().pages, isoDate);
+        if (existing) return existing.id;
+
+        const id = newId();
+        const firstBlock = emptyParagraph();
+        const page: Page = {
+          id,
+          title: formatJournalTitle(isoDate),
+          parentId: null,
+          blockIds: [firstBlock.id],
+          createdAt: Date.now(),
+          journalDate: isoDate,
+        };
+        set((state) => ({
+          pages: { ...state.pages, [id]: page },
+          blocks: { ...state.blocks, [firstBlock.id]: firstBlock },
+          rootPageIds: [...state.rootPageIds, id],
+        }));
+        return id;
+      },
+
       insertBlockAfter: (pageId, afterBlockId, type = "paragraph") => {
         const block: Block = { id: newId(), type, content: "", checked: type === "todo" ? false : undefined };
         set((state) => {
@@ -164,6 +212,15 @@ export const useWorkspace = create<WorkspaceState>()(
               type,
               checked: type === "todo" ? false : undefined,
             },
+          },
+        }));
+      },
+
+      setBlockDueDate: (blockId, dueDate) => {
+        set((state) => ({
+          blocks: {
+            ...state.blocks,
+            [blockId]: { ...state.blocks[blockId], dueDate: dueDate ?? undefined },
           },
         }));
       },

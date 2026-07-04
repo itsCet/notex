@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { usePathname, useParams, useRouter } from "next/navigation";
 import { getChildPages, useWorkspace } from "@/lib/store";
 import type { Page } from "@/lib/types";
 
@@ -66,8 +66,12 @@ function PageRow({ page, depth }: { page: Page; depth: number }) {
 
 export function Sidebar() {
   const router = useRouter();
+  const pathname = usePathname();
   const pages = useWorkspace((s) => s.pages);
-  const rootPages = useMemo(() => getChildPages(pages, null), [pages]);
+  const rootPages = useMemo(
+    () => getChildPages(pages, null).filter((p) => !p.journalDate),
+    [pages],
+  );
   const createPage = useWorkspace((s) => s.createPage);
 
   return (
@@ -77,6 +81,29 @@ export function Sidebar() {
           Notex
         </Link>
       </div>
+      <nav className="px-2">
+        <Link
+          href="/workspace/tasks"
+          className={`block rounded-md px-2 py-1 text-sm ${
+            pathname === "/workspace/tasks"
+              ? "bg-zinc-200 dark:bg-zinc-800"
+              : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+          }`}
+        >
+          Tâches
+        </Link>
+        <Link
+          href="/workspace/calendar"
+          className={`block rounded-md px-2 py-1 text-sm ${
+            pathname === "/workspace/calendar"
+              ? "bg-zinc-200 dark:bg-zinc-800"
+              : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+          }`}
+        >
+          Calendrier
+        </Link>
+      </nav>
+      <div className="my-2 border-t border-black/[.06] dark:border-white/[.08]" />
       <nav className="flex-1 overflow-y-auto px-2">
         {rootPages.map((page) => (
           <PageRow key={page.id} page={page} depth={0} />

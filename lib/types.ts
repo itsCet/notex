@@ -14,6 +14,7 @@ export interface Block {
   type: BlockType;
   content: string;
   checked?: boolean;
+  dueDate?: string; // ISO date, e.g. "2026-07-10" — only meaningful for "todo" blocks
 }
 
 export interface Page {
@@ -22,6 +23,7 @@ export interface Page {
   parentId: string | null;
   blockIds: string[];
   createdAt: number;
+  journalDate?: string; // ISO date, e.g. "2026-07-10" — set for journal/daily-note pages
 }
 
 export interface BlockTypeOption {

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useWorkspace } from "@/lib/store";
 import type { BlockType } from "@/lib/types";
 import { isCaretAtEnd, isCaretAtStart, placeCaretAtEnd, placeCaretAtStart } from "@/lib/caret";
+import { formatShortDate } from "@/lib/date";
 import { SlashMenu } from "./SlashMenu";
 
 function blockElementId(id: string) {
@@ -33,6 +34,7 @@ export function Block({ pageId, blockId }: BlockProps) {
   const page = useWorkspace((s) => s.pages[pageId]);
   const updateBlockContent = useWorkspace((s) => s.updateBlockContent);
   const setBlockType = useWorkspace((s) => s.setBlockType);
+  const setBlockDueDate = useWorkspace((s) => s.setBlockDueDate);
   const toggleTodo = useWorkspace((s) => s.toggleTodo);
   const insertBlockAfter = useWorkspace((s) => s.insertBlockAfter);
   const deleteBlock = useWorkspace((s) => s.deleteBlock);
@@ -41,6 +43,7 @@ export function Block({ pageId, blockId }: BlockProps) {
   const lastContent = useRef("");
   const [slashActive, setSlashActive] = useState(false);
   const [slashQuery, setSlashQuery] = useState("");
+  const [editingDate, setEditingDate] = useState(false);
 
   const content = block?.content;
 
@@ -146,6 +149,38 @@ export function Block({ pageId, blockId }: BlockProps) {
             block.checked ? "text-zinc-400 line-through" : ""
           }`}
         />
+        {editingDate ? (
+          <input
+            type="date"
+            autoFocus
+            defaultValue={block.dueDate ?? ""}
+            onBlur={(e) => {
+              setBlockDueDate(blockId, e.currentTarget.value || null);
+              setEditingDate(false);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") e.currentTarget.blur();
+              if (e.key === "Escape") setEditingDate(false);
+            }}
+            className="rounded border border-black/10 bg-transparent px-1 text-xs text-zinc-500 dark:border-white/10"
+          />
+        ) : block.dueDate ? (
+          <button
+            type="button"
+            onClick={() => setEditingDate(true)}
+            className="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700"
+          >
+            {formatShortDate(block.dueDate)}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setEditingDate(true)}
+            className="hidden shrink-0 rounded-full px-2 py-0.5 text-xs text-zinc-400 hover:bg-zinc-100 group-hover:block dark:hover:bg-zinc-800"
+          >
+            + date
+          </button>
+        )}
         {slashActive && (
           <SlashMenu key={slashQuery} query={slashQuery} onSelect={applyBlockType} onClose={() => setSlashActive(false)} />
         )}
