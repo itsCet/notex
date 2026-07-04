@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Block, BlockType, Page } from "./types";
@@ -14,10 +15,12 @@ interface WorkspaceState {
   pages: Record<string, Page>;
   blocks: Record<string, Block>;
   rootPageIds: string[];
+  hasSeeded: boolean;
 
   createPage: (parentId: string | null, title?: string) => string;
   renamePage: (pageId: string, title: string) => void;
   deletePage: (pageId: string) => void;
+  ensureSeeded: () => string | null;
 
   insertBlockAfter: (pageId: string, afterBlockId: string | null, type?: BlockType) => string;
   updateBlockContent: (blockId: string, content: string) => void;
@@ -43,6 +46,48 @@ export const useWorkspace = create<WorkspaceState>()(
       pages: {},
       blocks: {},
       rootPageIds: [],
+      hasSeeded: false,
+
+      ensureSeeded: () => {
+        const state = get();
+        if (state.hasSeeded) return null;
+
+        if (Object.keys(state.pages).length > 0) {
+          set({ hasSeeded: true });
+          return null;
+        }
+
+        const pageId = newId();
+        const welcomeBlocks: Block[] = [
+          {
+            id: newId(),
+            type: "paragraph",
+            content:
+              "Bienvenue dans votre espace Notex. Tapez « / » n'importe où pour insérer un titre, une liste, une citation ou une case à cocher.",
+          },
+          { id: newId(), type: "heading2", content: "Quelques raccourcis" },
+          { id: newId(), type: "bulleted", content: "Entrée crée un nouveau bloc" },
+          { id: newId(), type: "bulleted", content: "Retour arrière sur un bloc vide le supprime" },
+          { id: newId(), type: "bulleted", content: "Tapez / pour changer le type du bloc actuel" },
+          { id: newId(), type: "todo", content: "Cochez cette case pour essayer", checked: false },
+          { id: newId(), type: "quote", content: "Toute la puissance de Notion, sans son poids." },
+        ];
+        const page: Page = {
+          id: pageId,
+          title: "Bienvenue",
+          parentId: null,
+          blockIds: welcomeBlocks.map((b) => b.id),
+          createdAt: Date.now(),
+        };
+
+        set((state) => ({
+          pages: { ...state.pages, [pageId]: page },
+          blocks: { ...state.blocks, ...Object.fromEntries(welcomeBlocks.map((b) => [b.id, b])) },
+          rootPageIds: [...state.rootPageIds, pageId],
+          hasSeeded: true,
+        }));
+        return pageId;
+      },
 
       createPage: (parentId, title = "Sans titre") => {
         const id = newId();
@@ -151,3 +196,11 @@ export const useWorkspace = create<WorkspaceState>()(
     { name: "notex-workspace" },
   ),
 );
+
+export function useHasHydrated() {
+  return useSyncExternalStore(
+    (callback) => useWorkspace.persist.onFinishHydration(callback),
+    () => useWorkspace.persist.hasHydrated(),
+    () => false,
+  );
+}

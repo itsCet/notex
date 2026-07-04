@@ -2,21 +2,29 @@
 
 import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { getChildPages, useWorkspace } from "@/lib/store";
+import { getChildPages, useHasHydrated, useWorkspace } from "@/lib/store";
 
 export default function WorkspaceIndexPage() {
   const router = useRouter();
+  const hasHydrated = useHasHydrated();
   const pages = useWorkspace((s) => s.pages);
   const rootPages = useMemo(() => getChildPages(pages, null), [pages]);
   const createPage = useWorkspace((s) => s.createPage);
+  const ensureSeeded = useWorkspace((s) => s.ensureSeeded);
 
   useEffect(() => {
+    if (!hasHydrated) return;
+    const seededId = ensureSeeded();
+    if (seededId) {
+      router.replace(`/workspace/${seededId}`);
+      return;
+    }
     if (rootPages.length > 0) {
       router.replace(`/workspace/${rootPages[0].id}`);
     }
-  }, [rootPages, router]);
+  }, [hasHydrated, rootPages, router, ensureSeeded]);
 
-  if (rootPages.length > 0) return null;
+  if (!hasHydrated || rootPages.length > 0) return null;
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
